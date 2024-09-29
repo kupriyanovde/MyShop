@@ -1,0 +1,78 @@
+##
+# Файл .htaccess для настройки Apache
+# Обязательно проверьте, что включен модуль mod_rewrite
+
+## Запрет на просмотр каталогов
+<IfModule mod_autoindex.c>
+  IndexIgnore *
+</IfModule>
+
+## Политика реферера
+<IfModule mod_headers.c>
+  Header set Referrer-Policy "no-referrer"
+</IfModule>
+
+## Отключение автоматического определения MIME-типа
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Permissions-Policy "interest-cohort=()"
+</IfModule>
+
+## Настройка для поддержки символьных ссылок (можно закомментировать, если возникают проблемы)
+Options +FollowSymlinks
+
+## Запрет на просмотр содержимого каталогов
+Options -Indexes
+
+## Запрет прямого доступа к чувствительным файлам
+<FilesMatch "(?i)((\.tpl|\.twig|\.ini|\.log|(?<!robots)\.txt))">
+  Require all denied
+  ## Для Apache 2.2 и старше, замените строку "Require all denied" на:
+  # Order deny,allow
+  # Deny from all
+</FilesMatch>
+
+## Настройки SEO URL
+RewriteEngine On
+## Если установка находится не в главной папке, измените путь, например, /shop/
+RewriteBase /
+## Правила перезаписи
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !.*\.(ico|gif|jpg|jpeg|png|webp|js|css|svg)
+RewriteRule ^([^?]*) index.php?_route_=$1 [L,QSA]
+
+## Опциональные настройки для обработки ошибок (раскомментируйте при необходимости)
+# ErrorDocument 400 /index.php?route=error/not_found
+# ErrorDocument 401 /index.php?route=error/permission
+# ErrorDocument 403 /index.php?route=error/not_found
+# ErrorDocument 404 /index.php?route=error/not_found
+# ErrorDocument 500 /index.php?route=error/not_found
+# ErrorDocument 503 /index.php?route=error/not_found
+
+## Дополнительные настройки, которые могут потребоваться для некоторых серверов
+## Раскомментируйте команды, убрав знак # перед ними.
+## Если после включения любой из этих настроек возникает ошибка "500 Internal Server Error", 
+## восстановите #, так как это означает, что ваш хост не позволяет этого делать.
+
+# 1. Отключение register_globals (может помочь, если корзина позволяет добавлять только один товар за раз):
+# php_flag register_globals off
+
+# 2. Отключение magic quotes (может помочь, если они включены):
+# php_flag magic_quotes_gpc Off
+
+# 3. Установка максимального размера загружаемого файла. Большинство хостов ограничивает это значение, но вы можете попробовать:
+# php_value upload_max_filesize 50M
+
+# 4. Установка максимального размера POST-запроса. Раскомментируйте, если у вас много опций товара:
+# php_value post_max_size 50M
+
+# 5. Установка максимального времени выполнения скрипта. Раскомментируйте, если возникают ошибки сохранения форм:
+# php_value max_execution_time 200
+
+# 6. Установка максимального времени для получения ввода. Раскомментируйте, если возникают проблемы с формами:
+# php_value max_input_time 200
+
+# 7. Отключение ограничений open_basedir
+# php_admin_value open_basedir none
+
